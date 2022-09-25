@@ -1,0 +1,9 @@
+{
+    "name": "NexusFeatureFlags",
+    "tree": {
+        "$path": "./src",
+        "NexusDataStore": {
+            "$path": "./module/Nexus-Data-Store"
+        }
+    }
+}

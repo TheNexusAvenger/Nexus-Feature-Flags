@@ -1,0 +1,18 @@
+{
+    "name": "Nexus-Feature-Flags",
+    "tree": {
+        "$className": "DataModel",
+        "ServerScriptService": {
+            "$className": "ServerScriptService",
+            "NexusFeatureFlags": {
+                "$path": "."
+            }
+        },
+        "TestService": {
+            "$className": "TestService",
+            "NexusFeatureFlagsTests": {
+                "$path": "./test"
+            }
+        }
+    }
+}
