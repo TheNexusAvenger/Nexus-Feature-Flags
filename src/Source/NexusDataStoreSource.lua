@@ -74,11 +74,8 @@ Updates the output StringValue.
 --]]
 function NexusDataStoreSource:UpdateOutputStringValue(): nil
     local FeatureFlags = {}
-    for Key, Value in self.FeatureFlagDefaults do
-        FeatureFlags[Key] = Value
-    end
-    for Key, Value in self.OverridesDataStore.Data do
-        FeatureFlags[Key] = Value
+    for _, Name in self:GetAllFeatureFlags() do
+        FeatureFlags[Name] = self:GetFeatureFlag(Name)
     end
     self.OutputStringValue.Value = HttpService:JSONEncode(FeatureFlags)
 end
@@ -102,6 +99,22 @@ function NexusDataStoreSource:GetFeatureFlag(Name: string): any?
         return self.OverridesDataStore:Get(Name)
     end
     return self.FeatureFlagDefaults[Name]
+end
+
+--[[
+Returns the names of all the feature flags.
+--]]
+function NexusDataStoreSource:GetAllFeatureFlags(): {string}
+    local FeatureFlags, FeatureFlagsMap = {}, {}
+    for Name, _ in self.FeatureFlagDefaults do
+        table.insert(FeatureFlags, Name)
+        FeatureFlagsMap[Name] = true
+    end
+    for Name, _ in self.OverridesDataStore.Data do
+        if FeatureFlagsMap[Name] then continue end
+        table.insert(FeatureFlags, Name)
+    end
+    return FeatureFlags
 end
 
 --[[

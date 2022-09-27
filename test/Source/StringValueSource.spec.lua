@@ -5,6 +5,8 @@ Tests for the StringValueSource class.
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+
 local StringValueSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("StringValueSource"))
 
 return function()
@@ -87,6 +89,12 @@ return function()
             expect(PreviousCalls[1]).to.equal("Value2")
             expect(PreviousCalls[2]).to.equal("Value3")
         end)
+
+        it("should list no feature flags.", function()
+            CreateSource("")
+
+            expect(#Source:GetAllFeatureFlags()).to.equal(0)
+        end)
     end)
 
     describe("An empty table StringValue", function()
@@ -132,6 +140,12 @@ return function()
             expect(#PreviousCalls).to.equal(1)
             expect(PreviousCalls[1]).to.equal("Value2")
         end)
+
+        it("should list no feature flags.", function()
+            CreateSource("")
+
+            expect(#Source:GetAllFeatureFlags()).to.equal(0)
+        end)
     end)
 
     describe("A populated StringValue", function()
@@ -175,6 +189,12 @@ return function()
             task.wait()
             expect(#PreviousCalls).to.equal(1)
             expect(PreviousCalls[1]).to.equal("Value3")
+        end)
+
+        it("should list all feature flags.", function()
+            CreateSource("{\"TestFlag1\":\"Value1\",\"TestFlag2\":\"Value2\"}")
+
+            expect(HttpService:JSONEncode(Source:GetAllFeatureFlags())).to.equal(HttpService:JSONEncode({"TestFlag1", "TestFlag2"}))
         end)
     end)
 end

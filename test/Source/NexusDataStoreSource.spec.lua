@@ -5,6 +5,7 @@ Tests for the NexusDataStoreSource class.
 --]]
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
 
 local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
 local EmptyNexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
@@ -93,6 +94,13 @@ return function()
             expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
             expect(Source.OverridesDataStore:Get("TestFlag")).to.equal(false)
             expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should list all feature flags.", function()
+            Source:AddFeatureFlag("TestFlag1", "Value1")
+            Source:AddFeatureFlag("TestFlag2", "Value1")
+
+            expect(HttpService:JSONEncode(Source:GetAllFeatureFlags())).to.equal(HttpService:JSONEncode({"TestFlag1", "TestFlag2"}))
         end)
 
         it("should fire FeatureFlagChanged when a flag changes.", function()
@@ -218,6 +226,18 @@ return function()
             expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.be.near(os.time())
             expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
             expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should list all feature flags.", function()
+            Source.OverridesDataStore:Set("TestFlag1", false)
+            Source.DefaultsDataStore:Set("TestFlag1", {
+                Type = "boolean",
+                DefaultValue = true,
+                LastRegisterTime = 0,
+            })
+            Source:AddFeatureFlag("TestFlag2", "Value1")
+
+            expect(HttpService:JSONEncode(Source:GetAllFeatureFlags())).to.equal(HttpService:JSONEncode({"TestFlag2", "TestFlag1"}))
         end)
     end)
 end

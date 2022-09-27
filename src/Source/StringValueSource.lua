@@ -59,6 +59,18 @@ function StringValueSource:GetFeatureFlag(Name: string): any?
 end
 
 --[[
+Returns the names of all the feature flags.
+--]]
+function StringValueSource:GetAllFeatureFlags(): {string}
+    local FeatureFlags = {}
+    for Name, _ in self.FeatureFlagValues do
+        table.insert(FeatureFlags, Name)
+    end
+    return FeatureFlags
+end
+
+
+--[[
 Adds a feature flag if it wasn't set before.
 --]]
 function StringValueSource:AddFeatureFlag(): nil
