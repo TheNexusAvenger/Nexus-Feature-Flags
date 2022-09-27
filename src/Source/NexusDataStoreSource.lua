@@ -87,8 +87,8 @@ function NexusDataStoreSource:ConnectFeatureFlagDataStoreChanges(Name: string): 
     if not self.DataStoreUpdateEvents or self.DataStoreUpdateEvents[Name] then return end
     self.DataStoreUpdateEvents[Name] = self.OverridesDataStore:OnUpdate(Name, function()
         self:FireChangedEvents(Name)
+        self:UpdateOutputStringValue()
     end)
-    self:UpdateOutputStringValue()
 end
 
 --[[
