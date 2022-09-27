@@ -172,7 +172,7 @@ function NexusDataStoreSource:Destroy()
     for _, Event in self.EventObjects do
         Event:Destroy()
     end
-    self.FeatureFlagChangedEvents = {}
+    self.EventObjects = {}
     if self.DataStoreUpdateEvents then
         for _, Event in self.DataStoreUpdateEvents do
             Event:Destroy()
