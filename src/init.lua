@@ -4,6 +4,10 @@ TheNexusAvenger
 Main module for Nexus Feature Flags.
 --]]
 
+local Types = require(script:WaitForChild("Types"))
+
+--Create the singleton instance if it doesn't exist.
+--This ensures there aren't multiple NexusFeatureFlag instances if separate projects include them independently.
 if not _G.NexusFeatureFlagsSingletonInstance then
     if game:GetService("RunService"):IsClient() then
         _G.NexusFeatureFlagsSingletonInstance = require(script:WaitForChild("Source"):WaitForChild("StringValueSource")).new(script:WaitForChild("FeatureFlags"))
@@ -16,4 +20,5 @@ if not _G.NexusFeatureFlagsSingletonInstance then
     end
 end
 
-return _G.NexusFeatureFlagsSingletonInstance
+--Return the singleton instance.
+return _G.NexusFeatureFlagsSingletonInstance :: Types.NexusFeatureFlagsSource

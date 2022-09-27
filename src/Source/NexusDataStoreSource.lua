@@ -7,6 +7,7 @@ Feature flag source that uses NexusDataStore.
 local HttpService = game:GetService("HttpService")
 
 local NexusDataStore = require(script.Parent.Parent:WaitForChild("NexusDataStore"))
+local Types = require(script.Parent.Parent:WaitForChild("Types"))
 local EmptyNexusDataStore = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
 
 local NexusDataStoreSource = {}
@@ -17,7 +18,7 @@ NexusDataStoreSource.__index = NexusDataStoreSource
 --[[
 Creates a NexusDataStore source.
 --]]
-function NexusDataStoreSource.new(OutputStringValue: StringValue)
+function NexusDataStoreSource.new(OutputStringValue: StringValue): Types.NexusFeatureFlagsSource
     --Create the object.
     local self = {
         FeatureFlagDefaults = {},
@@ -106,7 +107,7 @@ end
 --[[
 Adds a feature flag if it wasn't set before.
 --]]
-function NexusDataStoreSource:AddFeatureFlag(Name: string, Value: any?, Type: string?): nil
+function NexusDataStoreSource:AddFeatureFlag(Name: string, Value: any, Type: string?): nil
     --Return if the feature flag default is already set.
     if self.FeatureFlagDefaults[Name] == Value and Value ~= nil then
         return
@@ -149,7 +150,7 @@ end
 --[[
 Sets the value of a feature flag.
 --]]
-function NexusDataStoreSource:SetFeatureFlag(Name: string, Value: any?): nil
+function NexusDataStoreSource:SetFeatureFlag(Name: string, Value: any): nil
     --If there is no default set, add the feature flag first.
     if self.FeatureFlagDefaults[Name] == nil and Value ~= nil then
         self:AddFeatureFlag(Name, Value)
@@ -174,7 +175,7 @@ end
 --[[
 Returns an event for a specific feature flag changing.
 --]]
-function NexusDataStoreSource:GetFeatureFlagChangedEvent(Name: string): CustomEvent
+function NexusDataStoreSource:GetFeatureFlagChangedEvent(Name: string): RBXScriptSignal
     --Create the event if it doesn't exist.
     if not self.FeatureFlagChangedEvents[Name] then
         self.FeatureFlagChangedEvents[Name] = Instance.new("BindableEvent")

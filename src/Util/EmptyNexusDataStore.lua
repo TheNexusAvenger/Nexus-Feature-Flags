@@ -43,7 +43,7 @@ Invokes the given callback when the value for a given
 key changes. Returns the connection to disconnect the
 changes.
 --]]
-function EmptyNexusDataStore:OnUpdate(Key: string, Callback): CustomEvent
+function EmptyNexusDataStore:OnUpdate(Key: string, Callback): RBXScriptSignal
     if not self.UpdateCallbacks[Key] then
         self.UpdateCallbacks[Key] = {}
     end

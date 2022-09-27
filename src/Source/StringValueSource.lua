@@ -6,6 +6,8 @@ Feature flag souurce that uses a StringValue.
 
 local HttpService = game:GetService("HttpService")
 
+local Types = require(script.Parent.Parent:WaitForChild("Types"))
+
 local StringValueSource = {}
 StringValueSource.__index = StringValueSource
 
@@ -14,7 +16,7 @@ StringValueSource.__index = StringValueSource
 --[[
 Creates a StringValue source.
 --]]
-function StringValueSource.new(StringValue: StringValue)
+function StringValueSource.new(StringValue: StringValue): Types.NexusFeatureFlagsSource
     --Create the object.
     local self = {
         FeatureFlagValues = {},
@@ -73,7 +75,7 @@ end
 --[[
 Returns an event for a specific feature flag changing.
 --]]
-function StringValueSource:GetFeatureFlagChangedEvent(Name: string): CustomEvent
+function StringValueSource:GetFeatureFlagChangedEvent(Name: string): RBXScriptSignal
     --Create the event if it doesn't exist.
     if not self.FeatureFlagChangedEvents[Name] then
         self.FeatureFlagChangedEvents[Name] = Instance.new("BindableEvent")
