@@ -1,3 +1,4 @@
+local HttpService = game:GetService("HttpService")
 --[[
 TheNexusAvenger
 

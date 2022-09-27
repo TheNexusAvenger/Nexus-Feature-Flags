@@ -4,6 +4,8 @@ TheNexusAvenger
 Feature flag source that uses NexusDataStore.
 --]]
 
+local HttpService = game:GetService("HttpService")
+
 local NexusDataStore = require(script.Parent.Parent:WaitForChild("NexusDataStore"))
 local EmptyNexusDataStore = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
 
@@ -15,11 +17,12 @@ NexusDataStoreSource.__index = NexusDataStoreSource
 --[[
 Creates a NexusDataStore source.
 --]]
-function NexusDataStoreSource.new()
+function NexusDataStoreSource.new(OutputStringValue: StringValue)
     --Create the object.
     local self = {
         FeatureFlagDefaults = {},
         FeatureFlagTypes = {},
+        OutputStringValue = OutputStringValue,
     }
     self.FeatureFlagChangedEvent = Instance.new("BindableEvent")
     self.FeatureFlagChanged = self.FeatureFlagChangedEvent.Event
@@ -48,6 +51,9 @@ function NexusDataStoreSource.new()
         self.OverridesDataStore = EmptyNexusDataStore.new()
     end
 
+    --Update the StringValue.
+    self:UpdateOutputStringValue()
+
     --Return the object.
     return self
 end
@@ -63,6 +69,20 @@ function NexusDataStoreSource:FireChangedEvents(Name: string): nil
 end
 
 --[[
+Updates the output StringValue.
+--]]
+function NexusDataStoreSource:UpdateOutputStringValue(): nil
+    local FeatureFlags = {}
+    for Key, Value in self.FeatureFlagDefaults do
+        FeatureFlags[Key] = Value
+    end
+    for Key, Value in self.OverridesDataStore.Data do
+        FeatureFlags[Key] = Value
+    end
+    self.OutputStringValue.Value = HttpService:JSONEncode(FeatureFlags)
+end
+
+--[[
 Listens for changes to a feature flag in the DataStore.
 --]]
 function NexusDataStoreSource:ConnectFeatureFlagDataStoreChanges(Name: string): nil
@@ -70,6 +90,7 @@ function NexusDataStoreSource:ConnectFeatureFlagDataStoreChanges(Name: string): 
     self.DataStoreUpdateEvents[Name] = self.OverridesDataStore:OnUpdate(Name, function()
         self:FireChangedEvents(Name)
     end)
+    self:UpdateOutputStringValue()
 end
 
 --[[
@@ -118,7 +139,10 @@ function NexusDataStoreSource:AddFeatureFlag(Name: string, Value: any?, Type: st
     self:ConnectFeatureFlagDataStoreChanges(Name)
 
     --Send the events.
-    if self:GetFeatureFlag(Name) == Value then return end
+    if self:GetFeatureFlag(Name) == Value then
+        self:UpdateOutputStringValue()
+        return
+    end
     self:FireChangedEvents(Name)
 end
 
@@ -144,6 +168,7 @@ function NexusDataStoreSource:SetFeatureFlag(Name: string, Value: any?): nil
     else
         self.OverridesDataStore:Set(Name, Value)
     end
+    self:UpdateOutputStringValue()
 end
 
 --[[
