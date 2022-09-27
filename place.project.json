@@ -2,8 +2,8 @@
     "name": "Nexus-Feature-Flags",
     "tree": {
         "$className": "DataModel",
-        "ServerScriptService": {
-            "$className": "ServerScriptService",
+        "ReplicatedStorage": {
+            "$className": "ReplicatedStorage",
             "NexusFeatureFlags": {
                 "$path": "."
             }
