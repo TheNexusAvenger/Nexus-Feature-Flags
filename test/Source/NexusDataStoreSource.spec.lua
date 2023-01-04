@@ -3,16 +3,19 @@ TheNexusAvenger
 
 Tests for the NexusDataStoreSource class.
 --]]
+--!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
+local NexusFeatureFlagsTypes = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Types"))
+local NexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("NexusDataStore"))
 local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
 local EmptyNexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
 
 return function()
     --Create the source.
-    local Source = nil
+    local Source: {OverridesDataStore: NexusDataStore.SaveData, DefaultsDataStore: NexusDataStore.SaveData, DataStoreUpdateEvents: any} & NexusFeatureFlagsTypes.NexusFeatureFlagsSource = nil
     local StringValue = nil
     beforeEach(function()
         StringValue = Instance.new("StringValue")
@@ -20,14 +23,12 @@ return function()
             GetDataStore = function()
                 return EmptyNexusDataStore.new()
             end,
-        }
-        Source = NexusDataStoreSource.new(StringValue)
+        } :: any
+        Source = NexusDataStoreSource.new(StringValue) :: any
     end)
     afterEach(function()
         StringValue:Destroy()
-        StringValue = nil
         Source:Destroy()
-        Source = nil
     end)
 
     --Run the tests.
@@ -83,7 +84,7 @@ return function()
         end)
 
         it("should store a default and allow changes without a defaults DataStore.", function()
-            Source.DefaultsDataStore = nil
+            Source.DefaultsDataStore = nil :: any
             Source.DataStoreUpdateEvents = nil
             Source:AddFeatureFlag("TestFlag", true)
             expect(Source:GetFeatureFlag("TestFlag")).to.equal(true)

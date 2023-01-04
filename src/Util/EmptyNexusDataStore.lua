@@ -1,9 +1,9 @@
-local HttpService = game:GetService("HttpService")
 --[[
 TheNexusAvenger
 
 Empty NexusDataStore to use in place of an actual NexusDataStore.
 --]]
+--!strict
 
 local EmptyNexusDataStore = {}
 EmptyNexusDataStore.__index = EmptyNexusDataStore
@@ -31,9 +31,10 @@ end
 --[[
 Sets the stored value for a given key.
 --]]
-function EmptyNexusDataStore:Set(Key: string, Value: any): nil
+function EmptyNexusDataStore:Set(Key: string, Value: any): ()
     self.Data[Key] = Value
-    for _, Callback in self.UpdateCallbacks[Key] or {} do
+    if not self.UpdateCallbacks[Key] then return end
+    for _, Callback in self.UpdateCallbacks[Key] do
         Callback(Value)
     end
 end
@@ -54,7 +55,7 @@ end
 --[[
 Disconnects the events.
 --]]
-function EmptyNexusDataStore:Disconnect(): nil
+function EmptyNexusDataStore:Disconnect(): ()
     self.MockEvent:Destroy()
 end
 

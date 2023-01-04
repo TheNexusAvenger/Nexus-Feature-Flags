@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Types used by Nexus Feature Flags.
 --]]
+--!strict
 
 export type NexusFeatureFlagsSource = {
     FeatureFlagChanged: RBXScriptSignal,

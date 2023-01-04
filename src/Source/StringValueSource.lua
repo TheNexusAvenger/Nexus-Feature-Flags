@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Feature flag souurce that uses a StringValue.
 --]]
+--!strict
 
 local HttpService = game:GetService("HttpService")
 
@@ -48,7 +49,7 @@ function StringValueSource.new(StringValue: StringValue): Types.NexusFeatureFlag
     end)
 
     --Return the object.
-    return self
+    return (self :: any) :: Types.NexusFeatureFlagsSource
 end
 
 --[[
@@ -104,7 +105,6 @@ Destroys the source.
 function StringValueSource:Destroy()
     if self.StringValueChangedEvent then
         self.StringValueChangedEvent:Disconnect()
-        self.StringValueChangedEvent = nil
     end
     for _, Event in self.EventObjects do
         Event:Destroy()

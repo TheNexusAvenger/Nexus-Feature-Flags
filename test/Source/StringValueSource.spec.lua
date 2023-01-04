@@ -3,6 +3,7 @@ TheNexusAvenger
 
 Tests for the StringValueSource class.
 --]]
+--!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
@@ -13,16 +14,14 @@ return function()
     --Create the source.
     local StringValue = nil
     local Source = nil
-    local function CreateSource(InitialValue: string): nil
+    local function CreateSource(InitialValue: string): ()
         StringValue = Instance.new("StringValue")
         StringValue.Value = InitialValue
         Source = StringValueSource.new(StringValue)
     end
     afterEach(function()
         Source:Destroy()
-        Source = nil
         StringValue:Destroy()
-        StringValue = nil
     end)
 
     --Run the tests.
