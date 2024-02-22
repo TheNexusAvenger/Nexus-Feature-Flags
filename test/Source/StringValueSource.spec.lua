@@ -74,16 +74,16 @@ return function()
             end)
 
             StringValue.Value = "{\"TestFlag1\":\"Value1\",\"TestFlag2\":\"Value2\"}"
+            task.wait()
             expect(Source:GetFeatureFlag("TestFlag1")).to.equal("Value1")
             expect(Source:GetFeatureFlag("TestFlag2")).to.equal("Value2")
-            task.wait()
             expect(#PreviousCalls).to.equal(1)
             expect(PreviousCalls[1]).to.equal("Value2")
 
             StringValue.Value = "{\"TestFlag1\":\"Value1\",\"TestFlag2\":\"Value3\"}"
+            task.wait()
             expect(Source:GetFeatureFlag("TestFlag1")).to.equal("Value1")
             expect(Source:GetFeatureFlag("TestFlag2")).to.equal("Value3")
-            task.wait()
             expect(#PreviousCalls).to.equal(2)
             expect(PreviousCalls[1]).to.equal("Value2")
             expect(PreviousCalls[2]).to.equal("Value3")
@@ -133,9 +133,9 @@ return function()
             end)
 
             StringValue.Value = "{\"TestFlag1\":\"Value1\",\"TestFlag2\":\"Value2\"}"
+            task.wait()
             expect(Source:GetFeatureFlag("TestFlag1")).to.equal("Value1")
             expect(Source:GetFeatureFlag("TestFlag2")).to.equal("Value2")
-            task.wait()
             expect(#PreviousCalls).to.equal(1)
             expect(PreviousCalls[1]).to.equal("Value2")
         end)
@@ -183,9 +183,9 @@ return function()
             end)
 
             StringValue.Value = "{\"TestFlag1\":\"Value3\",\"TestFlag2\":\"Value3\"}"
+            task.wait()
             expect(Source:GetFeatureFlag("TestFlag1")).to.equal("Value3")
             expect(Source:GetFeatureFlag("TestFlag2")).to.equal("Value3")
-            task.wait()
             expect(#PreviousCalls).to.equal(1)
             expect(PreviousCalls[1]).to.equal("Value3")
         end)
