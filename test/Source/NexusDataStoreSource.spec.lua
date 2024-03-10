@@ -10,8 +10,8 @@ local HttpService = game:GetService("HttpService")
 
 local NexusFeatureFlagsTypes = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Types"))
 local NexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("NexusDataStore"))
+local LocalSaveData = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("NexusDataStore"):WaitForChild("LocalSaveData"))
 local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
-local EmptyNexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
 
 return function()
     --Create the source.
@@ -21,7 +21,7 @@ return function()
         StringValue = Instance.new("StringValue")
         NexusDataStoreSource.NexusDataStore = {
             GetDataStore = function()
-                return EmptyNexusDataStore.new()
+                return LocalSaveData.new()
             end,
         } :: any
         Source = NexusDataStoreSource.new(StringValue) :: any

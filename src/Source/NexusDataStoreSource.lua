@@ -8,8 +8,8 @@ Feature flag source that uses NexusDataStore.
 local HttpService = game:GetService("HttpService")
 
 local NexusDataStore = require(script.Parent.Parent:WaitForChild("NexusDataStore"))
+local LocalSaveData = require(script.Parent.Parent:WaitForChild("NexusDataStore"):WaitForChild("LocalSaveData"))
 local Types = require(script.Parent.Parent:WaitForChild("Types"))
-local EmptyNexusDataStore = require(script.Parent.Parent:WaitForChild("Util"):WaitForChild("EmptyNexusDataStore"))
 
 local NexusDataStoreSource = {}
 NexusDataStoreSource.NexusDataStore = NexusDataStore
@@ -55,7 +55,7 @@ function NexusDataStoreSource.new(OutputStringValue: StringValue): Types.NexusFe
         warn("Failed to load NexusDataStore for feature flags because: "..tostring(Error))
     end
     if not self.OverridesDataStore then
-        self.OverridesDataStore = EmptyNexusDataStore.new() :: any
+        self.OverridesDataStore = LocalSaveData.new() :: any
     end
 
     --Update the StringValue.
@@ -111,9 +111,9 @@ end
 Returns the names of all the feature flags.
 --]]
 function NexusDataStoreSource:GetAllFeatureFlags(): {string}
-    local FeatureFlags, FeatureFlagsMap = {}, {}
+    local FeatureFlags, FeatureFlagsMap = {} :: {string}, {}
     for Name, _ in self.FeatureFlagDefaults do
-        table.insert(FeatureFlags, Name)
+        table.insert(FeatureFlags, Name :: string)
         FeatureFlagsMap[Name] = true
     end
     for Name, _ in self.OverridesDataStore.Data do
