@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Types used by Nexus Feature Flags.
---]]
+--Types used by Nexus Feature Flags.
 --!strict
 
 export type NexusFeatureFlagsSource = {

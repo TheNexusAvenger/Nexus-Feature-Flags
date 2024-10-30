@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Tests for the NexusDataStoreSource class.
---]]
+--Tests for the NexusDataStoreSource class.
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

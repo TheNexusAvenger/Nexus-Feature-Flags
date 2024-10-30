@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Feature flag source that uses NexusDataStore.
---]]
+--Feature flag source that uses NexusDataStore.
 --!strict
 
 local HttpService = game:GetService("HttpService")
@@ -15,44 +11,53 @@ local NexusDataStoreSource = {}
 NexusDataStoreSource.NexusDataStore = NexusDataStore
 NexusDataStoreSource.__index = NexusDataStoreSource
 
-type ExposedNexusDataStoreSource = {
-    Data: {[string]: any},
-} & NexusDataStore.SaveData
+export type NexusDataStoreSource = {
+    FeatureFlagDefaults: {[string]: any},
+    FeatureFlagTypes: {[string]: string},
+    OutputStringValue: StringValue,
+    FeatureFlagChangedEvent: BindableEvent,
+    FeatureFlagChanged: RBXScriptSignal,
+    EventObjects: {BindableEvent},
+    FeatureFlagChangedEvents: {[string]: BindableEvent},
+    DataStoreUpdateEvents: {[string]: RBXScriptConnection},
+    OverridesDataStore: NexusDataStore.SaveData,
+    DefaultsDataStore: NexusDataStore.SaveData,
+} & typeof(setmetatable({}, NexusDataStoreSource)) & Types.NexusFeatureFlagsSource
 
 
 
 --[[
 Creates a NexusDataStore source.
 --]]
-function NexusDataStoreSource.new(OutputStringValue: StringValue): Types.NexusFeatureFlagsSource
+function NexusDataStoreSource.new(OutputStringValue: StringValue): NexusDataStoreSource
     --Create the object.
-    local self = {
+    local FeatureFlagChangedEvent = Instance.new("BindableEvent")
+    local self = setmetatable({
         FeatureFlagDefaults = {},
         FeatureFlagTypes = {},
         OutputStringValue = OutputStringValue,
-    }
-    self.FeatureFlagChangedEvent = Instance.new("BindableEvent")
-    self.FeatureFlagChanged = self.FeatureFlagChangedEvent.Event
-    self.EventObjects = {self.FeatureFlagChangedEvent}
-    self.FeatureFlagChangedEvents = {}
-    self.DataStoreUpdateEvents = {} :: {[string]: RBXScriptConnection}
-    setmetatable(self, NexusDataStoreSource)
+        FeatureFlagChangedEvent = FeatureFlagChangedEvent,
+        FeatureFlagChanged = FeatureFlagChangedEvent.Event :: RBXScriptSignal,
+        EventObjects = {FeatureFlagChangedEvent},
+        FeatureFlagChangedEvents = {},
+        DataStoreUpdateEvents = {},
+    }, NexusDataStoreSource) :: NexusDataStoreSource
 
     --Load the data stores.
     local Worked, Error = pcall(function()
         --Get the DataStores.
-        self.OverridesDataStore = self.NexusDataStore:GetDataStore("NexusAdminFeatureFlags", "FeatureFlagOverrides") :: ExposedNexusDataStoreSource
-        self.DefaultsDataStore = self.NexusDataStore:GetDataStore("NexusAdminFeatureFlags", "FeatureFlagDefaults") :: ExposedNexusDataStoreSource
+        local OverridesDataStore = self.NexusDataStore:GetDataStore("NexusAdminFeatureFlags", "FeatureFlagOverrides")
+        local DefaultsDataStore = self.NexusDataStore:GetDataStore("NexusAdminFeatureFlags", "FeatureFlagDefaults")
+        self.OverridesDataStore = OverridesDataStore
+        self.DefaultsDataStore = DefaultsDataStore
 
         --Listen for changes to the overrides.
-        if self.OverridesDataStore.Data and typeof(self.OverridesDataStore.Data) == "table" then
-            for FeauterFlagName, _ in self.OverridesDataStore.Data do
-                self:ConnectFeatureFlagDataStoreChanges(FeauterFlagName)
-            end
+        for _, FeauterFlagName in OverridesDataStore:ListKeys() do
+            self:ConnectFeatureFlagDataStoreChanges(FeauterFlagName)
         end
     end)
     if not Worked then
-        warn("Failed to load NexusDataStore for feature flags because: "..tostring(Error))
+        warn(`Failed to load NexusDataStore for feature flags because: {Error}`)
     end
     if not self.OverridesDataStore then
         self.OverridesDataStore = LocalSaveData.new() :: any
@@ -62,13 +67,13 @@ function NexusDataStoreSource.new(OutputStringValue: StringValue): Types.NexusFe
     self:UpdateOutputStringValue()
 
     --Return the object.
-    return (self :: any) :: Types.NexusFeatureFlagsSource
+    return self
 end
 
 --[[
 Fires the changed events for a feature flag.
 --]]
-function NexusDataStoreSource:FireChangedEvents(Name: string): ()
+function NexusDataStoreSource.FireChangedEvents(self: NexusDataStoreSource, Name: string): ()
     self.FeatureFlagChangedEvent:Fire(Name, self:GetFeatureFlag(Name))
     if self.FeatureFlagChangedEvents[Name] then
         self.FeatureFlagChangedEvents[Name]:Fire(self:GetFeatureFlag(Name))
@@ -78,7 +83,7 @@ end
 --[[
 Updates the output StringValue.
 --]]
-function NexusDataStoreSource:UpdateOutputStringValue(): ()
+function NexusDataStoreSource.UpdateOutputStringValue(self: NexusDataStoreSource): ()
     local FeatureFlags = {}
     for _, Name in self:GetAllFeatureFlags() do
         FeatureFlags[Name] = self:GetFeatureFlag(Name)
@@ -89,7 +94,7 @@ end
 --[[
 Listens for changes to a feature flag in the DataStore.
 --]]
-function NexusDataStoreSource:ConnectFeatureFlagDataStoreChanges(Name: string): ()
+function NexusDataStoreSource.ConnectFeatureFlagDataStoreChanges(self: NexusDataStoreSource, Name: string): ()
     if not self.DataStoreUpdateEvents or self.DataStoreUpdateEvents[Name] then return end
     self.DataStoreUpdateEvents[Name] = self.OverridesDataStore:OnUpdate(Name, function()
         self:FireChangedEvents(Name)
@@ -100,7 +105,7 @@ end
 --[[
 Returns the value of a feature flag.
 --]]
-function NexusDataStoreSource:GetFeatureFlag(Name: string): any?
+function NexusDataStoreSource.GetFeatureFlag(self: NexusDataStoreSource, Name: string): any?
     if self.OverridesDataStore:Get(Name) ~= nil then
         return self.OverridesDataStore:Get(Name)
     end
@@ -110,13 +115,13 @@ end
 --[[
 Returns the names of all the feature flags.
 --]]
-function NexusDataStoreSource:GetAllFeatureFlags(): {string}
+function NexusDataStoreSource.GetAllFeatureFlags(self: NexusDataStoreSource): {string}
     local FeatureFlags, FeatureFlagsMap = {} :: {string}, {}
     for Name, _ in self.FeatureFlagDefaults do
         table.insert(FeatureFlags, Name :: string)
         FeatureFlagsMap[Name] = true
     end
-    for Name, _ in self.OverridesDataStore.Data do
+    for _, Name in self.OverridesDataStore:ListKeys() do
         if FeatureFlagsMap[Name] then continue end
         table.insert(FeatureFlags, Name)
     end
@@ -126,7 +131,7 @@ end
 --[[
 Adds a feature flag if it wasn't set before.
 --]]
-function NexusDataStoreSource:AddFeatureFlag(Name: string, Value: any, Type: string?): ()
+function NexusDataStoreSource.AddFeatureFlag(self: NexusDataStoreSource, Name: string, Value: any, Type: string?): ()
     --Return if the feature flag default is already set.
     if self.FeatureFlagDefaults[Name] == Value and Value ~= nil then
         return
@@ -143,7 +148,7 @@ function NexusDataStoreSource:AddFeatureFlag(Name: string, Value: any, Type: str
 
     --Store the default.
     self.FeatureFlagDefaults[Name] = Value
-    self.FeatureFlagTypes[Name] = Type
+    self.FeatureFlagTypes[Name] = (Type :: string)
 
     --Store the default in the DataStore.
     --This is intended to be read externally by apps, not internally. It is not designed to be reliable.
@@ -166,7 +171,7 @@ end
 --[[
 Sets the value of a feature flag.
 --]]
-function NexusDataStoreSource:SetFeatureFlag(Name: string, Value: any): ()
+function NexusDataStoreSource.SetFeatureFlag(self: NexusDataStoreSource, Name: string, Value: any): ()
     --If there is no default set, add the feature flag first.
     if self.FeatureFlagDefaults[Name] == nil and Value ~= nil then
         self:AddFeatureFlag(Name, Value)
@@ -191,7 +196,7 @@ end
 --[[
 Returns an event for a specific feature flag changing.
 --]]
-function NexusDataStoreSource:GetFeatureFlagChangedEvent(Name: string): RBXScriptSignal
+function NexusDataStoreSource.GetFeatureFlagChangedEvent(self: NexusDataStoreSource, Name: string): RBXScriptSignal
     --Create the event if it doesn't exist.
     if not self.FeatureFlagChangedEvents[Name] then
         self.FeatureFlagChangedEvents[Name] = Instance.new("BindableEvent")
@@ -205,7 +210,7 @@ end
 --[[
 Destroys the source.
 --]]
-function NexusDataStoreSource:Destroy()
+function NexusDataStoreSource.Destroy(self: NexusDataStoreSource): ()
     self.OverridesDataStore:Disconnect()
     if self.DefaultsDataStore then
         self.DefaultsDataStore:Disconnect()
@@ -217,9 +222,9 @@ function NexusDataStoreSource:Destroy()
     self.EventObjects = {}
     if self.DataStoreUpdateEvents then
         for _, Event in self.DataStoreUpdateEvents do
-            Event:Destroy()
+            Event:Disconnect()
         end
-        self.DataStoreUpdateEvents = nil
+        self.DataStoreUpdateEvents = {}
     end
 end
 

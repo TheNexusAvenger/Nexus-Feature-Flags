@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Feature flag souurce that uses a StringValue.
---]]
+--Feature flag souurce that uses a StringValue.
 --!strict
 
 local HttpService = game:GetService("HttpService")
@@ -12,21 +8,30 @@ local Types = require(script.Parent.Parent:WaitForChild("Types"))
 local StringValueSource = {}
 StringValueSource.__index = StringValueSource
 
+export type StringValueSource = {
+    FeatureFlagValues: {[string]: any},
+    FeatureFlagChangedEvent: BindableEvent,
+    FeatureFlagChanged: RBXScriptSignal,
+    EventObjects: {BindableEvent},
+    FeatureFlagChangedEvents: {[string]: BindableEvent},
+    StringValueChangedEvent: RBXScriptConnection,
+} & typeof(setmetatable({}, StringValueSource)) & Types.NexusFeatureFlagsSource
+
 
 
 --[[
 Creates a StringValue source.
 --]]
-function StringValueSource.new(StringValue: StringValue): Types.NexusFeatureFlagsSource
+function StringValueSource.new(StringValue: StringValue): StringValueSource
     --Create the object.
-    local self = {
+    local FeatureFlagChangedEvent = Instance.new("BindableEvent")
+    local self = setmetatable({
         FeatureFlagValues = {},
-    }
-    self.FeatureFlagChangedEvent = Instance.new("BindableEvent")
-    self.FeatureFlagChanged = self.FeatureFlagChangedEvent.Event
-    self.EventObjects = {self.FeatureFlagChangedEvent}
-    self.FeatureFlagChangedEvents = {}
-    setmetatable(self, StringValueSource)
+        FeatureFlagChangedEvent = FeatureFlagChangedEvent,
+        FeatureFlagChanged = FeatureFlagChangedEvent.Event :: RBXScriptSignal,
+        EventObjects = {FeatureFlagChangedEvent},
+        FeatureFlagChangedEvents = {},
+    }, StringValueSource) :: StringValueSource
 
     --Load the values.
     if StringValue.Value ~= "" then
@@ -49,20 +54,20 @@ function StringValueSource.new(StringValue: StringValue): Types.NexusFeatureFlag
     end)
 
     --Return the object.
-    return (self :: any) :: Types.NexusFeatureFlagsSource
+    return self
 end
 
 --[[
 Returns the value of a feature flag.
 --]]
-function StringValueSource:GetFeatureFlag(Name: string): any?
+function StringValueSource.GetFeatureFlag(self: StringValueSource, Name: string): any?
     return self.FeatureFlagValues[Name]
 end
 
 --[[
 Returns the names of all the feature flags.
 --]]
-function StringValueSource:GetAllFeatureFlags(): {string}
+function StringValueSource.GetAllFeatureFlags(self: StringValueSource): {string}
     local FeatureFlags = {}
     for Name, _ in self.FeatureFlagValues do
         table.insert(FeatureFlags, Name)
@@ -74,21 +79,21 @@ end
 --[[
 Adds a feature flag if it wasn't set before.
 --]]
-function StringValueSource:AddFeatureFlag(): nil
+function StringValueSource.AddFeatureFlag(self: StringValueSource): nil
     error("AddFeatureFlag is not supported on the client.")
 end
 
 --[[
 Sets the value of a feature flag.
 --]]
-function StringValueSource:SetFeatureFlag(): nil
+function StringValueSource.SetFeatureFlag(self: StringValueSource): nil
     error("SetFeatureFlag is not supported on the client.")
 end
 
 --[[
 Returns an event for a specific feature flag changing.
 --]]
-function StringValueSource:GetFeatureFlagChangedEvent(Name: string): RBXScriptSignal
+function StringValueSource.GetFeatureFlagChangedEvent(self: StringValueSource, Name: string): RBXScriptSignal
     --Create the event if it doesn't exist.
     if not self.FeatureFlagChangedEvents[Name] then
         self.FeatureFlagChangedEvents[Name] = Instance.new("BindableEvent")
@@ -102,7 +107,7 @@ end
 --[[
 Destroys the source.
 --]]
-function StringValueSource:Destroy()
+function StringValueSource.Destroy(self: StringValueSource): ()
     if self.StringValueChangedEvent then
         self.StringValueChangedEvent:Disconnect()
     end

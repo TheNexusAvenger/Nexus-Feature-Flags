@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Main module for Nexus Feature Flags.
---]]
+--Main module for Nexus Feature Flags.
 --!strict
 
 local Types = require(script:WaitForChild("Types"))

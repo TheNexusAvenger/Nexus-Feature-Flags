@@ -1,8 +1,4 @@
---[[
-TheNexusAvenger
-
-Tests for the StringValueSource class.
---]]
+--Tests for the StringValueSource class.
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
