@@ -4,14 +4,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
-local NexusFeatureFlagsTypes = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Types"))
-local NexusDataStore = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("NexusDataStore"))
 local LocalSaveData = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("NexusDataStore"):WaitForChild("LocalSaveData"))
 local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
 
 return function()
     --Create the source.
-    local Source: {OverridesDataStore: NexusDataStore.SaveData, DefaultsDataStore: NexusDataStore.SaveData, DataStoreUpdateEvents: any} & NexusFeatureFlagsTypes.NexusFeatureFlagsSource = nil
+    local Source = nil
     local StringValue = nil
     beforeEach(function()
         StringValue = Instance.new("StringValue")
@@ -30,6 +28,7 @@ return function()
     --Run the tests.
     describe("An empty DataStore", function()
         it("should store a default.", function()
+            Source.StoreLastRegisterTime = true
             Source:AddFeatureFlag("TestFlag", true)
             expect(Source:GetFeatureFlag("TestFlag")).to.equal(true)
             expect(Source.OverridesDataStore:Get("TestFlag")).to.equal(nil)
@@ -210,17 +209,90 @@ return function()
 
     describe("An initialied DataStore", function()
         it("should update the defaults.", function()
+            Source.StoreLastRegisterTime = true
             Source.OverridesDataStore:Set("TestFlag", false)
             Source.DefaultsDataStore:Set("TestFlag", {
                 Type = "boolean",
                 DefaultValue = true,
                 LastRegisterTime = 0,
+                Unchanged = true,
             })
 
             Source:AddFeatureFlag("TestFlag", "Value")
             expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
             expect(Source.DefaultsDataStore:Get("TestFlag").Type).to.equal("string")
             expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.be.near(os.time())
+            expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
+            expect(Source.DefaultsDataStore:Get("TestFlag").Unchanged).to.equal(nil)
+            expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should not update values with recent last register times.", function()
+            Source.StoreLastRegisterTime = true
+            Source.OverridesDataStore:Set("TestFlag", false)
+            Source.DefaultsDataStore:Set("TestFlag", {
+                Type = "string",
+                DefaultValue = "Value",
+                LastRegisterTime = os.time() - 50,
+                Unchanged = true,
+            })
+
+            Source:AddFeatureFlag("TestFlag", "Value")
+            expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
+            expect(Source.DefaultsDataStore:Get("TestFlag").Type).to.equal("string")
+            expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.never.be.near(os.time())
+            expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
+            expect(Source.DefaultsDataStore:Get("TestFlag").Unchanged).to.equal(true)
+            expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should update values with no last register times.", function()
+            Source.StoreLastRegisterTime = true
+            Source.OverridesDataStore:Set("TestFlag", false)
+            Source.DefaultsDataStore:Set("TestFlag", {
+                Type = "string",
+                DefaultValue = "Value",
+                Unchanged = true,
+            })
+
+            Source:AddFeatureFlag("TestFlag", "Value")
+            expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
+            expect(Source.DefaultsDataStore:Get("TestFlag").Type).to.equal("string")
+            expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.be.near(os.time())
+            expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
+            expect(Source.DefaultsDataStore:Get("TestFlag").Unchanged).to.equal(nil)
+            expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should not update values with no register times.", function()
+            Source.OverridesDataStore:Set("TestFlag", false)
+            Source.DefaultsDataStore:Set("TestFlag", {
+                Type = "string",
+                DefaultValue = "Value",
+                Unchanged = true,
+            })
+
+            Source:AddFeatureFlag("TestFlag", "Value")
+            expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
+            expect(Source.DefaultsDataStore:Get("TestFlag").Type).to.equal("string")
+            expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.equal(nil)
+            expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
+            expect(Source.DefaultsDataStore:Get("TestFlag").Unchanged).to.equal(true)
+            expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
+        end)
+
+        it("should update values with previous last register times.", function()
+            Source.OverridesDataStore:Set("TestFlag", false)
+            Source.DefaultsDataStore:Set("TestFlag", {
+                Type = "string",
+                DefaultValue = "Value",
+                LastRegisterTime = 0,
+            })
+
+            Source:AddFeatureFlag("TestFlag", "Value")
+            expect(Source:GetFeatureFlag("TestFlag")).to.equal(false)
+            expect(Source.DefaultsDataStore:Get("TestFlag").Type).to.equal("string")
+            expect(Source.DefaultsDataStore:Get("TestFlag").LastRegisterTime).to.equal(nil)
             expect(Source.DefaultsDataStore:Get("TestFlag").DefaultValue).to.equal("Value")
             expect(StringValue.Value).to.equal("{\"TestFlag\":false}")
         end)

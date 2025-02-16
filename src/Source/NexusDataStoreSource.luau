@@ -12,6 +12,8 @@ NexusDataStoreSource.NexusDataStore = NexusDataStore
 NexusDataStoreSource.__index = NexusDataStoreSource
 
 export type NexusDataStoreSource = {
+    StoreLastRegisterTime: boolean,
+    LastRegisterTimeIgnoreTime: number,
     FeatureFlagDefaults: {[string]: any},
     FeatureFlagTypes: {[string]: string},
     OutputStringValue: StringValue,
@@ -33,6 +35,8 @@ function NexusDataStoreSource.new(OutputStringValue: StringValue): NexusDataStor
     --Create the object.
     local FeatureFlagChangedEvent = Instance.new("BindableEvent")
     local self = setmetatable({
+        StoreLastRegisterTime = false,
+        LastRegisterTimeIgnoreTime = 5 * 60,
         FeatureFlagDefaults = {},
         FeatureFlagTypes = {},
         OutputStringValue = OutputStringValue,
@@ -140,7 +144,7 @@ function NexusDataStoreSource.AddFeatureFlag(self: NexusDataStoreSource, Name: s
     --Determine the type if it isn't set.
     if Type == nil then
         if Value == nil then
-            warn("Unable to determine type for "..tostring(Name).." because the type parameter is not defined and the value is nil.")
+            warn(`Unable to determine type for {Name} because the type parameter is not defined and the value is nil.`)
         else
             Type = typeof(Value)
         end
@@ -153,11 +157,22 @@ function NexusDataStoreSource.AddFeatureFlag(self: NexusDataStoreSource, Name: s
     --Store the default in the DataStore.
     --This is intended to be read externally by apps, not internally. It is not designed to be reliable.
     if self.DefaultsDataStore then
-        self.DefaultsDataStore:Set(Name, {
-            Type = Type,
-            DefaultValue = Value,
-            LastRegisterTime = os.time(),
-        })
+        local DefaultChanged = true
+        local ExistingValue = self.DefaultsDataStore:Get(Name)
+        if ExistingValue and ExistingValue.Type == Type and ExistingValue.DefaultValue == Value then
+            if self.StoreLastRegisterTime then
+                DefaultChanged = (ExistingValue.LastRegisterTime == nil or math.abs(os.time() - ExistingValue.LastRegisterTime) > self.LastRegisterTimeIgnoreTime)
+            else
+                DefaultChanged = (ExistingValue.LastRegisterTime ~= nil)
+            end
+        end
+        if DefaultChanged then
+            self.DefaultsDataStore:Set(Name, {
+                Type = Type,
+                DefaultValue = Value,
+                LastRegisterTime = self.StoreLastRegisterTime and os.time() or nil,
+            })
+        end
     end
 
     --Listten for DataStore changes.
