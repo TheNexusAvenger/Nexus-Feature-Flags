@@ -3,9 +3,10 @@
 
 local HttpService = game:GetService("HttpService")
 
-local NexusDataStore = require(script.Parent.Parent:WaitForChild("NexusDataStore"))
-local LocalSaveData = require(script.Parent.Parent:WaitForChild("NexusDataStore"):WaitForChild("LocalSaveData"))
+local NexusDataStore = require(script.Parent.Parent:WaitForChild("Packages"):WaitForChild("NexusDataStore"))
 local Types = require(script.Parent.Parent:WaitForChild("Types"))
+
+local LocalSaveData = NexusDataStore.LocalSaveData
 
 local NexusDataStoreSource = {}
 NexusDataStoreSource.NexusDataStore = NexusDataStore

@@ -5,6 +5,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Types = require(script:WaitForChild("Types"))
 
+export type NexusFeatureFlagsSource = Types.NexusFeatureFlagsSource
+
 --Create the singleton instance if it doesn't exist.
 --This ensures there aren't multiple NexusFeatureFlag instances if separate projects include them independently.
 if not _G.NexusFeatureFlagsSingletonInstance then
