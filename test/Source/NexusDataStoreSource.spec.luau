@@ -4,8 +4,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
-local LocalSaveData = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Packages"):WaitForChild("NexusDataStore")).LocalSaveData
-local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
+local LocalSaveData = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("NexusFeatureFlags"):WaitForChild("Packages"):WaitForChild("NexusDataStore")).LocalSaveData
+local NexusDataStoreSource = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("NexusDataStoreSource"))
 
 return function()
     --Create the source.

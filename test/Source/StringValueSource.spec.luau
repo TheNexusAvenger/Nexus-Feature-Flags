@@ -4,7 +4,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
-local StringValueSource = require(ReplicatedStorage:WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("StringValueSource"))
+local StringValueSource = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("NexusFeatureFlags"):WaitForChild("Source"):WaitForChild("StringValueSource"))
 
 return function()
     --Create the source.
