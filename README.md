@@ -1,4 +1,8 @@
 # Nexus-Feature-Flags
+**Nexus Feature Flags is deprecated outside of Nexus Admin.
+[`ConfigService`](https://create.roblox.com/docs/reference/engine/classes/ConfigService)
+should be used instead.**
+
 Nexus Feature Flags allows for developer-defined feature
 flags to enable and disable features without updating the
 game. Feature flags are synchronized between servers and
