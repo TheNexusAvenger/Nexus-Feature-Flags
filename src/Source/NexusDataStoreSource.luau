@@ -138,7 +138,7 @@ Adds a feature flag if it wasn't set before.
 --]]
 function NexusDataStoreSource.AddFeatureFlag(self: NexusDataStoreSource, Name: string, Value: any, Type: string?): ()
     --Return if the feature flag default is already set.
-    if self.FeatureFlagDefaults[Name] == Value and Value ~= nil then
+    if self.FeatureFlagDefaults[Name] ~= nil and Value ~= nil then
         return
     end
 
